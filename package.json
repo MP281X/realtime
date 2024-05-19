@@ -1,0 +1,31 @@
+{
+	"name": "@mp281x/realtime",
+	"type": "module",
+
+	"scripts": {
+		"dev": "tsup-node --watch",
+
+		"fix": "shared-config-fix",
+		"lint": "shared-config-lint",
+		"setup": "shared-config-setup && tsup-node"
+	},
+
+	"files": ["./dist/*"],
+
+	"bin": {
+		"realtime": "./dist/src/index.js"
+	},
+
+	"devDependencies": {
+		"@mp281x/shared-config": "latest",
+
+		"typescript": "^5",
+		"@types/node": "^20",
+
+		"tsup": "^8",
+
+		"fast-glob": "latest"
+	},
+
+	"pnpm": { "peerDependencyRules": { "allowedVersions": { "eslint": "*" } } }
+}

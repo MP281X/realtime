@@ -1,0 +1,34 @@
+name: publish
+
+on: { push: { branches: [main] } }
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup PNPM
+        uses: pnpm/action-setup@v3
+        with: { version: 'latest' }
+
+      - name: setup Node
+        uses: actions/setup-node@v4
+        with: { node-version: 'latest', registry-url: 'https://registry.npmjs.org' }
+
+      - name: setup / build
+        run: pnpm i && pnpm run setup
+
+      - name: check
+        run: pnpm run lint
+
+      - name: set version
+        run: |
+          HASH=$(git rev-parse --short HEAD)
+          jq --arg hash "1.0.0-$HASH" '.version = $hash' package.json > temp
+          mv temp package.json
+
+      - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
