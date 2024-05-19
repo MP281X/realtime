@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { getEndpoints } from './src/findEndpoints.ts'
-import { importFactory, exportFactory, writeNodesToFile, objectTypeFactory, typeImportFactory } from './src/tsFactory.ts'
+import { importFactory, exportFactory, writeNodesToFile, objectTypeFactory, typeImportFactory, directExportFactory } from './src/tsFactory.ts'
 
 const typeImports = []
 const routeObj = new Map<string, string>()
@@ -20,21 +20,12 @@ type Endpoints = {
 }
 `
 
-const importServerHandler = importFactory('generatorToReadableStream', '@mp281x/realtime')
-const importClientHandler = importFactory('sseHandler', '@mp281x/realtime')
-
+const clientImport = importFactory('sseHandler', '@mp281x/realtime')
 const clientExport = exportFactory('sseClient', 'sseHandler', 'Endpoints')
-const serverExport = exportFactory('sseClient', 'sseHandler', 'Endpoints')
 
-writeNodesToFile('./imports.g.ts', [
-	...typeImports,
-	importServerHandler,
-	importClientHandler,
-	routeObjType,
-	endpointsType,
-	clientExport,
-	serverExport
-])
+const serverExport = directExportFactory('generatorToReadableStream', 'sseServer', '@mp281x/realtime')
+
+writeNodesToFile('./imports.g.ts', [...typeImports, clientImport, routeObjType, endpointsType, clientExport, serverExport])
 
 export { sseHandler } from './src/client.ts'
 export { generatorToReadableStream } from './src/server.ts'

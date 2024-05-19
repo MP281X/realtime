@@ -58,6 +58,17 @@ export const exportFactory = (exportName: string, fnName: string, typeName: stri
 		)
 	)
 
+export const directExportFactory = (exportName: string, exportAlias: string, path: string) =>
+	ts.factory.createExportDeclaration(
+		undefined,
+		false,
+		ts.factory.createNamedExports([
+			ts.factory.createExportSpecifier(false, ts.factory.createIdentifier(exportName), ts.factory.createIdentifier(exportAlias))
+		]),
+		ts.factory.createStringLiteral(path),
+		undefined
+	)
+
 const nodeToStr = (node: ts.Node) =>
 	// @ts-expect-error
 	ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printNode(ts.EmitHint.Unspecified, node, undefined)
