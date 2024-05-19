@@ -11,10 +11,7 @@
 	},
 
 	"files": ["./dist/*"],
-
-	"bin": {
-		"realtime": "./dist/src/index.js"
-	},
+	"bin": { "realtime": "./dist/index.js" },
 
 	"devDependencies": {
 		"@mp281x/shared-config": "latest",
