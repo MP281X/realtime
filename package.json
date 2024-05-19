@@ -2,6 +2,12 @@
 	"name": "@mp281x/realtime",
 	"type": "module",
 
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+
+	"files": ["./dist/*"],
+	"bin": { "realtime": "./dist/index.js" },
+
 	"scripts": {
 		"dev": "tsup-node --watch",
 
@@ -9,9 +15,6 @@
 		"lint": "shared-config-lint",
 		"setup": "shared-config-setup && tsup-node"
 	},
-
-	"files": ["./dist/*"],
-	"bin": { "realtime": "./dist/index.js" },
 
 	"devDependencies": {
 		"@mp281x/shared-config": "latest",
