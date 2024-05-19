@@ -3,7 +3,7 @@ import { defineConfig } from 'tsup'
 export default defineConfig({
 	clean: true,
 	dts: true,
-	entryPoints: ['./index.ts'],
+	entryPoints: ['./index.ts', './cli.ts'],
 	format: ['esm'],
 	outDir: 'dist',
 	shims: true,

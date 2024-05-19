@@ -1,5 +1,5 @@
 {
 	"extends": ["@mp281x/shared-config/tsconfig"],
-	"include": ["index.ts", "src/**/*", "*.config.*", "demo/**/*"],
-	"exclude": ["**/node_modules", "**/.*/", "**/dist", "**/build"]
+	"include": ["index.ts", "cli.ts", "src/**/*", "*.config.*"],
+	"exclude": ["**/node_modules", "**/.*/", "**/dist"]
 }

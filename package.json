@@ -6,7 +6,7 @@
 	"types": "./dist/index.d.ts",
 
 	"files": ["./dist/*"],
-	"bin": { "realtime": "./dist/index.js" },
+	"bin": { "realtime": "./dist/cli.js" },
 
 	"scripts": {
 		"dev": "tsup-node --watch",
