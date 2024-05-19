@@ -14,7 +14,7 @@ const routeObjType = objectTypeFactory('RawEndpoints', Object.fromEntries(routeO
 
 const endpointsType = `
 type EndpointType = (request: Request) => Promise<Record<string, unknown>>
-type EndpointReturnType<Endpoint> = Endpoint extends { GET: () => infer ReturnType } ? Awaited<ReturnType> : never
+type EndpointReturnType<Endpoint> = Endpoint extends { GET: (request: Request) => infer ReturnType } ? Awaited<ReturnType> : never
 type Endpoints = {
 	[K in keyof RawEndpoints as RawEndpoints[K] extends { GET: EndpointType } ? K : never]: EndpointReturnType<RawEndpoints[K]>
 }
@@ -25,7 +25,7 @@ const clientExport = exportFactory('sseClient', 'sseHandler', 'Endpoints')
 
 const serverExport = directExportFactory('generatorToReadableStream', 'sseServer', '@mp281x/realtime')
 
-writeNodesToFile('./imports.g.ts', [...typeImports, clientImport, routeObjType, endpointsType, clientExport, serverExport])
+writeNodesToFile('./sse.g.ts', [...typeImports, clientImport, routeObjType, endpointsType, clientExport, serverExport])
 
 export { sseHandler } from './src/client.ts'
 export { generatorToReadableStream } from './src/server.ts'
