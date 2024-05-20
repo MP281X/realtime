@@ -1,7 +1,7 @@
 import fs from 'fs'
 import ts from 'typescript'
 
-export const objectTypeFactory = (name: string, obj: Record<string, string>) =>
+export const objectTypeFactory = (name: string, obj: DeepReadonly<Record<string, string>>) =>
 	ts.factory.createTypeAliasDeclaration(
 		undefined,
 		ts.factory.createIdentifier(name),
@@ -69,11 +69,11 @@ export const directExportFactory = (exportName: string, exportAlias: string, pat
 		undefined
 	)
 
-const nodeToStr = (node: ts.Node) =>
+const nodeToStr = (node: DeepReadonly<ts.Node>) =>
 	// @ts-expect-error
 	ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printNode(ts.EmitHint.Unspecified, node, undefined)
 
-export const writeNodesToFile = (fileName: string, nodes: (string | ts.Node)[]) => {
+export const writeNodesToFile = (fileName: string, nodes: readonly (string | DeepReadonly<ts.Node>)[]) => {
 	const fileContent: string[] = []
 
 	for (const node of nodes) fileContent.push(typeof node === 'string' ? node : nodeToStr(node))
