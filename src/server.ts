@@ -5,7 +5,7 @@ const isBuildTime = () => {
 	return false
 }
 
-const iteratorToReadableStream = (iterator: DeepReadonly<Generator | AsyncGenerator>) => {
+const iteratorToReadableStream = (iterator: Generator | AsyncGenerator) => {
 	const stream = new ReadableStream({
 		cancel: async () => {
 			try {
@@ -34,8 +34,8 @@ const iteratorToReadableStream = (iterator: DeepReadonly<Generator | AsyncGenera
 	return new Response(stream, { headers })
 }
 
-// eslint-disable-next-line arrow-body-style, @typescript-eslint/prefer-readonly-parameter-types
+// eslint-disable-next-line arrow-body-style
 export const generatorToReadableStream = <T extends Record<string, unknown>>(generator: (request: Request) => Generator<T> | AsyncGenerator<T>) => {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/require-await, @typescript-eslint/prefer-readonly-parameter-types
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/require-await
 	return async (request: Request) => iteratorToReadableStream(generator(request)) as any as T
 }
