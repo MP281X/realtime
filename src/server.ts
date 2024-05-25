@@ -1,10 +1,3 @@
-const isBuildTime = () => {
-	if (process.env['NEXT_PHASE'] === 'phase-production-build') return true
-	if (process.env['NODE_ENV'] === 'production') return true
-
-	return false
-}
-
 const iteratorToReadableStream = (iterator: Generator | AsyncGenerator) => {
 	const stream = new ReadableStream({
 		cancel: async () => {
@@ -13,8 +6,6 @@ const iteratorToReadableStream = (iterator: Generator | AsyncGenerator) => {
 			} catch {}
 		},
 		pull: async controller => {
-			if (isBuildTime()) return controller.close()
-
 			const encoder = new TextEncoder()
 
 			// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unsafe-assignment
