@@ -43,10 +43,10 @@ class PubSub<T extends Record<string, unknown>> {
 		const dataArray: T[] = []
 		let resolve: ((value: T | PromiseLike<T>) => void) | undefined = undefined
 
-		const listener = (data: string) => {
-			if (resolve === undefined) dataArray.push(JSON.parse(data))
+		const listener = (data: T) => {
+			if (resolve === undefined) dataArray.push(data)
 			else {
-				resolve(JSON.parse(data))
+				resolve(data)
 				resolve = undefined
 			}
 		}
