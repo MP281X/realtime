@@ -15,13 +15,6 @@ class PubSub<T extends Record<string, unknown>> {
 		this.redisSub = this.redis.duplicate()
 	}
 
-	private channelId(channelId: string | undefined) {
-		if (!this.channel.endsWith(':*')) return this.channel
-
-		if (channelId === undefined) throw new Error('invalid channel id')
-		return this.channel.slice(0, -1) + channelId
-	}
-
 	// initialize the redis pub/sub listener
 	public async initHandler() {
 		const { EventEmitter } = await import('events') // eslint-disable-line @typescript-eslint/naming-convention
@@ -30,7 +23,7 @@ class PubSub<T extends Record<string, unknown>> {
 		await this.redisSub.connect()
 
 		// subscribe to the pub-sub
-		void this.redisSub.pSubscribe(this.channel, (message: string, ch: string) => {
+		void this.redisSub.pSubscribe(`${this.channel}:*`, (message: string, ch: string) => {
 			// check if there is a user subscribed to the channel
 			if (this.eventEmitter!.listenerCount(ch) > 0) {
 				// emit the message to the listener of the channel
@@ -43,8 +36,9 @@ class PubSub<T extends Record<string, unknown>> {
 	}
 
 	// return an interator for a specific channel
-	public async *iterator(channelId?: string) {
-		const channel = this.channelId(channelId)
+	// eslint-disable-next-line @typescript-eslint/ban-types
+	public async *iterator(channelId: '*' | ({} & string)) {
+		const channel = `${this.channel}:${channelId}`
 
 		const dataArray: T[] = []
 		let resolve: ((value: T | PromiseLike<T>) => void) | undefined = undefined
@@ -73,8 +67,9 @@ class PubSub<T extends Record<string, unknown>> {
 		}
 	}
 
-	public async publish(channelId: string, data: T) {
-		const channel = this.channelId(channelId)
+	// eslint-disable-next-line @typescript-eslint/ban-types
+	public async publish(channelId: '*' | ({} & string), data: T) {
+		const channel = `${this.channel}:${channelId}`
 
 		await this.redis.publish(channel, JSON.stringify(data))
 	}
