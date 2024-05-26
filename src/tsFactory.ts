@@ -26,49 +26,6 @@ export const typeImportFactory = (name: string, path: string) =>
 		undefined
 	)
 
-export const importFactory = (name: string, path: string) =>
-	ts.factory.createImportDeclaration(
-		undefined,
-		ts.factory.createImportClause(
-			false,
-			undefined,
-			ts.factory.createNamedImports([ts.factory.createImportSpecifier(false, undefined, ts.factory.createIdentifier(name))])
-		),
-		ts.factory.createStringLiteral(path),
-		undefined
-	)
-
-export const exportFactory = (exportName: string, fnName: string, typeName: string) =>
-	ts.factory.createVariableStatement(
-		[ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
-		ts.factory.createVariableDeclarationList(
-			[
-				ts.factory.createVariableDeclaration(
-					ts.factory.createIdentifier(exportName),
-					undefined,
-					undefined,
-					ts.factory.createCallExpression(
-						ts.factory.createIdentifier(fnName),
-						[ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(typeName), undefined)],
-						[]
-					)
-				)
-			],
-			ts.NodeFlags.Const
-		)
-	)
-
-export const directExportFactory = (exportName: string, exportAlias: string, path: string) =>
-	ts.factory.createExportDeclaration(
-		undefined,
-		false,
-		ts.factory.createNamedExports([
-			ts.factory.createExportSpecifier(false, ts.factory.createIdentifier(exportName), ts.factory.createIdentifier(exportAlias))
-		]),
-		ts.factory.createStringLiteral(path),
-		undefined
-	)
-
 const nodeToStr = (node: ts.Node) =>
 	// @ts-expect-error
 	ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printNode(ts.EmitHint.Unspecified, node, undefined)

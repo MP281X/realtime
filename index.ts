@@ -1,4 +1,3 @@
-import type {} from '@mp281x/shared-config/types'
-
-export { sseHandler } from './src/client.ts'
-export { generatorToReadableStream } from './src/server.ts'
+export { pubSub } from './src/pubSub.ts'
+export { sseHandler as sseClient } from './src/client.ts'
+export { generatorToReadableStream as sseServer } from './src/server.ts'

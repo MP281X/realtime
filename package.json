@@ -16,6 +16,9 @@
 		"setup": "shared-config-setup && tsup-node"
 	},
 
+	"peerDependencies": { "redis": "^4" },
+	"peerDependenciesMeta": { "redis": { "optional": true } },
+
 	"devDependencies": {
 		"@mp281x/shared-config": "latest",
 
