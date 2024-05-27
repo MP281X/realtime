@@ -21,6 +21,7 @@ export const getEndpoints = async () => {
 
 		// remove unnecessary /
 		key = key.replaceAll('//', '/')
+		if (key.length > 1 && key.endsWith('/')) key = key.slice(0, -1)
 
 		let importName = key.replaceAll('/', '_')
 		if (importName === '_') importName = 'index'
