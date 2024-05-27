@@ -12,18 +12,30 @@ for (const { importName, key, path } of await getEndpoints()) {
 	routeObj.set(key, importName)
 }
 
-const routeObjType = objectTypeFactory('RawEndpoints', Object.fromEntries(routeObj))
+const routeObjType = objectTypeFactory('FileExports', Object.fromEntries(routeObj))
 
 const endpointsType = `
 type EndpointType = (request: Request) => Promise<Record<string, unknown>>
-type EndpointReturnType<Endpoint> = Endpoint extends { GET: (request: Request) => infer ReturnType } ? Awaited<ReturnType> : never
+type EndpointReturnType<Endpoint extends EndpointType> = Awaited<ReturnType<Endpoint>>
+type TEndpoints = {
+	[K in keyof FileExports as FileExports[K] extends { GET: EndpointType } ? K : never]:
+		// @ts-ignore-error
+		EndpointReturnType<FileExports[K]['GET']>
+}
 
-export type TEndpoints = {
-	[K in keyof RawEndpoints as RawEndpoints[K] extends { GET: EndpointType } ? K : never]: EndpointReturnType<RawEndpoints[K]>
+type ActionsType = Record<string, (...args: any) => Promise<unknown>>
+type ActionsReturnType<Action extends ActionsType> = {
+	[K in keyof Action]: Awaited<ReturnType<Action[K]>>
+}
+type TActions = {
+	[K in keyof FileExports as FileExports[K] extends { actions: ActionsType } ? K : never]:
+		// @ts-ignore-error
+		ActionsReturnType<FileExports[K]['actions']>
 }
 
 declare global {
 	interface Endpoints extends TEndpoints {}
+	interface Actions extends TActions {}
 }
 `
 
