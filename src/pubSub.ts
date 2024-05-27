@@ -36,7 +36,6 @@ class PubSub<T extends Record<string, unknown>> {
 	}
 
 	// return an interator for a specific channel
-	// eslint-disable-next-line @typescript-eslint/ban-types
 	public async *iterator(channelId: '*' | ({} & string)) {
 		const channel = `${this.channel}:${channelId}`
 
@@ -67,7 +66,6 @@ class PubSub<T extends Record<string, unknown>> {
 		}
 	}
 
-	// eslint-disable-next-line @typescript-eslint/ban-types
 	public async publish(channelId: '*' | ({} & string), data: T) {
 		const channel = `${this.channel}:${channelId}`
 
