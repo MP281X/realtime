@@ -4,6 +4,15 @@ import * as v from 'valibot'
 
 type MaybePromise<T> = T | Promise<T>
 type ActionsEvent = Parameters<Actions[string]>[number]
+type MaybeError<Data, Error> =
+	| {
+			error: undefined
+			data: Awaited<Data>
+	  }
+	| {
+			data: undefined
+			error: Awaited<Error>
+	  }
 
 export const defineSvelteAction = <
 	Input extends v.ObjectSchema<any, any>,
@@ -33,13 +42,13 @@ export const defineSvelteAction = <
 	}
 
 	return {
-		handler: async (event: ActionsEvent): Promise<Awaited<Res> | { errors: Record<string, unknown> }> => {
+		handler: async (event: ActionsEvent): Promise<MaybeError<Res, Record<string, unknown>>> => {
 			const schema = action.input as v.ObjectSchema<v.ObjectEntries, any>
 			const result = v.safeParse(schema, await parseBody(event.request))
 
-			if (result.success === false) return { errors: v.flatten(result.issues).nested ?? {} }
+			if (result.success === false) return { data: undefined, error: v.flatten(result.issues).nested ?? {} }
 
-			return await action.handler(result.output as any, event)
+			return { data: await action.handler(result.output as any, event), error: undefined }
 		},
 		schema: action.input
 	}
@@ -71,11 +80,11 @@ export const defineNextAction = <
 }) => {
 	const schema = action.input as v.ObjectSchema<v.ObjectEntries, any>
 
-	return async (data: Data): Promise<Awaited<Res> | { errors: Record<string, unknown> }> => {
+	return async (data: Data): Promise<MaybeError<Res, Record<string, unknown>>> => {
 		const result = v.safeParse(schema, data)
 
-		if (result.success === false) return { errors: v.flatten(result.issues).nested ?? {} }
+		if (result.success === false) return { data: undefined, error: v.flatten(result.issues).nested ?? {} }
 
-		return await action.handler(result.output as any)
+		return { data: await action.handler(result.output as any), error: undefined }
 	}
 }
