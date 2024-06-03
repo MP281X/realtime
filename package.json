@@ -23,7 +23,6 @@
 	},
 	"peerDependenciesMeta": {
 		"redis": { "optional": true },
-		"valibot": { "optional": true },
 		"@sveltejs/kit": { "optional": true }
 	},
 
