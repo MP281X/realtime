@@ -16,8 +16,16 @@
 		"setup": "shared-config-setup && tsup-node"
 	},
 
-	"peerDependencies": { "redis": "^4" },
-	"peerDependenciesMeta": { "redis": { "optional": true } },
+	"peerDependencies": {
+		"redis": "^4",
+		"valibot": "latest",
+		"@sveltejs/kit": "latest"
+	},
+	"peerDependenciesMeta": {
+		"redis": { "optional": true },
+		"valibot": { "optional": true },
+		"@sveltejs/kit": { "optional": true }
+	},
 
 	"devDependencies": {
 		"@mp281x/shared-config": "latest",
@@ -26,7 +34,6 @@
 		"@types/node": "^20",
 
 		"tsup": "^8",
-
 		"fast-glob": "latest"
 	},
 

@@ -27,6 +27,6 @@ const iteratorToReadableStream = (iterator: Generator | AsyncGenerator) => {
 
 // eslint-disable-next-line arrow-body-style
 export const generatorToReadableStream = <T extends Record<string, unknown>>(generator: (request: Request) => Generator<T> | AsyncGenerator<T>) => {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/require-await
+	// eslint-disable-next-line @typescript-eslint/require-await
 	return async (request: Request) => iteratorToReadableStream(generator(request)) as any as T
 }

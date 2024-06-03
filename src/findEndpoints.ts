@@ -15,10 +15,6 @@ export const getEndpoints = async () => {
 		key = key.replace('src/routes', '')
 		key = key.replace('+server.ts', '')
 
-		// remove sveltekit path and file name
-		key = key.replace('src/routes', '')
-		key = key.replace('+page.server.ts', '')
-
 		// remove unnecessary /
 		key = key.replaceAll('//', '/')
 		if (key.length > 1 && key.endsWith('/')) key = key.slice(0, -1)

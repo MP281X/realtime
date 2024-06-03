@@ -9,7 +9,6 @@ class PubSub<T extends Record<string, unknown>> {
 	private redis
 	private redisSub
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	constructor(redis: RedisClientType<any, any, any>, channel: string) {
 		this.channel = channel
 		this.eventEmitter = new EventEmitter()

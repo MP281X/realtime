@@ -23,19 +23,8 @@ type TEndpoints = {
 		EndpointReturnType<FileExports[K]['GET']>
 }
 
-type ActionsType = Record<string, (...args: any) => Promise<unknown>>
-type ActionsReturnType<Action extends ActionsType> = {
-	[K in keyof Action]: Awaited<ReturnType<Action[K]>>
-}
-type TActions = {
-	[K in keyof FileExports as FileExports[K] extends { actions: ActionsType } ? K : never]:
-		// @ts-ignore-error
-		ActionsReturnType<FileExports[K]['actions']>
-}
-
 declare global {
 	interface Endpoints extends TEndpoints {}
-	interface Actions extends TActions {}
 }
 `
 
