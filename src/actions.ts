@@ -5,7 +5,7 @@ import * as v from 'valibot'
 type MaybePromise<T> = T | Promise<T>
 type ActionsEvent = Parameters<Actions[string]>[number]
 
-export const defineAction = <
+export const defineSvelteAction = <
 	Input extends v.ObjectSchema<any, any>,
 	Data extends v.InferOutput<Input>,
 	// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
@@ -45,7 +45,7 @@ export const defineAction = <
 	}
 }
 
-export const actionsRouter = <T extends Record<string, ReturnType<typeof defineAction>>>(actions: T) => {
+export const svelteActions = <T extends Record<string, ReturnType<typeof defineSvelteAction>>>(actions: T) => {
 	const inputs: Record<string, unknown> = {}
 	const handlers: Record<string, unknown> = {}
 
@@ -57,5 +57,25 @@ export const actionsRouter = <T extends Record<string, ReturnType<typeof defineA
 	return {
 		handlers: handlers as { [K in keyof T]: T[K]['handler'] },
 		schema: inputs as { [K in keyof T]: T[K]['schema'] }
+	}
+}
+
+export const defineNextAction = <
+	Input extends v.ObjectSchema<any, any>,
+	Data extends v.InferOutput<Input>,
+	// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+	Res extends MaybePromise<void | Record<string, unknown>>
+>(action: {
+	input: Input
+	handler: (data: Data) => Res
+}) => {
+	const schema = action.input as v.ObjectSchema<v.ObjectEntries, any>
+
+	return async (data: Data): Promise<Awaited<Res> | { errors: Record<string, unknown> }> => {
+		const result = v.safeParse(schema, data)
+
+		if (result.success === false) return { errors: v.flatten(result.issues).nested ?? {} }
+
+		return await action.handler(result.output as any)
 	}
 }
