@@ -1,7 +1,7 @@
 import fastGlob from 'fast-glob'
 
 export const getEndpoints = async () => {
-	const rawEndpoints = await fastGlob.glob(['app/**/route.ts', 'src/routes/**/+server.ts', 'src/routes/**/+page.server.ts'])
+	const rawEndpoints = await fastGlob.glob(['app/**/route.ts', 'src/routes/**/+server.ts'])
 
 	const endpoints: { key: string; path: string; importName: string }[] = []
 
@@ -16,13 +16,14 @@ export const getEndpoints = async () => {
 		key = key.replace('+server.ts', '')
 
 		// remove unnecessary /
-		key = key.replaceAll('//', '/')
+		key = key.replace(/\/+/g, '/')
 		if (key.length > 1 && key.endsWith('/')) key = key.slice(0, -1)
+		if (key.length > 1 && key.startsWith('/')) key = key.slice(1)
 
 		let importName = key.replaceAll('/', '_')
 		if (importName === '_') importName = 'index'
 
-		endpoints.push({ importName, key, path: './' + path })
+		endpoints.push({ importName, key: `/${key.replace(/\/+/g, '/')}`, path: './' + path })
 	}
 
 	return endpoints
