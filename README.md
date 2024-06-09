@@ -1,12 +1,12 @@
 # @mp281x/realtime
 
-A library designed to handle server-sent events (SSE) with full type-safety in SvelteKit and Next.js.
+A library designed to handle server-sent events (SSE) with full type-safety in SvelteKit, Next.js and Astro.
 
 ## Features
 
 - Full type-safety for client and frontend
 - Simplified management of server-sent events.
-- Seamless integration with SvelteKit and Next.js.
+- Seamless integration with SvelteKit, Next.js and Astro.
 
 ## Installation
 

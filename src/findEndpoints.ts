@@ -1,7 +1,7 @@
 import fastGlob from 'fast-glob'
 
 export const getEndpoints = async () => {
-	const rawEndpoints = await fastGlob.glob(['app/**/route.ts', 'src/routes/**/+server.ts'])
+	const rawEndpoints = await fastGlob.glob(['app/**/route.ts', 'src/routes/**/+server.ts', 'src/pages/**/*.ts'])
 
 	const endpoints: { key: string; path: string; importName: string }[] = []
 
@@ -14,6 +14,10 @@ export const getEndpoints = async () => {
 		// remove sveltekit path and file name
 		key = key.replace('src/routes', '')
 		key = key.replace('+server.ts', '')
+
+		// remove astro path and file name
+		key = key.replace('src/pages', '')
+		key = key.replace('.ts', '')
 
 		// remove unnecessary /
 		key = key.replace(/\/+/g, '/')
