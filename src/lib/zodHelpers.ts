@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import type { z } from 'zod'
@@ -15,14 +17,41 @@ type ZodTypes = {
 	ZodNumber: z.ZodNumber
 	ZodEnum: z.ZodEnum<any>
 	ZodBoolean: z.ZodBoolean
+	ZodArray: z.ZodArray<any>
 	ZodObject: z.ZodObject<any>
-	// ZodArray: z.ZodArray<any>
 }
 const zodTypeGuard = <T extends keyof ZodTypes>(typeGuard: T, schema: z.ZodTypeAny): schema is ZodTypes[T] => {
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 	if (schema._def?.typeName === typeGuard) return true
 	if (schema._def === undefined && typeGuard === 'ZodObject') return true
 	return false
+}
+
+const zodInputShape = <T extends z.ZodTypeAny>(schema: T, key = '') => {
+	let shape: Record<string, keyof ZodTypes> = {}
+
+	if (zodTypeGuard('ZodObject', schema)) {
+		for (const [_key, value] of Object.entries(schema.shape)) {
+			const nestedKey = key === '' ? _key : `${key}.${_key}`
+
+			const nestedShape = zodInputShape(value as any, nestedKey)
+			shape = { ...shape, ...nestedShape }
+		}
+	}
+
+	if (zodTypeGuard('ZodArray', schema)) {
+		const nestedShape = schema._def.type._cached
+		shape = { ...shape, ...zodInputShape(nestedShape, `${key}.{index}`) }
+	}
+
+	if (zodTypeGuard('ZodString', schema)) shape[key] = 'ZodString'
+
+	if (zodTypeGuard('ZodNumber', schema)) shape[key] = 'ZodNumber'
+
+	if (zodTypeGuard('ZodBoolean', schema)) shape[key] = 'ZodBoolean'
+
+	if (zodTypeGuard('ZodEnum', schema)) shape[key] = 'ZodEnum'
+
+	return shape
 }
 
 // type FlatObjKeys<Schema, Path extends string = ''> =
@@ -38,33 +67,53 @@ const zodTypeGuard = <T extends keyof ZodTypes>(typeGuard: T, schema: z.ZodTypeA
 // 	: never
 
 type HTMLInputFields = { name: string; type: 'text' | 'number' | 'checkbox' }
-// type ZodFormSchemaReturn<T extends z.ZodObject<z.ZodRawShape>> = Record<FlatObjKeys<z.input<T>>, HTMLInputFields>
-export const zodFormSchema = <T extends z.ZodObject<z.ZodRawShape>>(rawSchema: T, key = ''): Record<string, HTMLInputFields> => {
-	let shape: Record<string, HTMLInputFields> = {}
+export const zodFormSchema = <T extends z.ZodObject<z.ZodRawShape>>(rawSchema: T) => {
+	const input = zodInputShape(rawSchema)
 
-	const schema = rawSchema as z.ZodTypeAny
+	// Record<FlatObjKeys<z.input<T>>, HTMLInputFields>
+	const schema: Record<string, HTMLInputFields> = {}
 
-	if (zodTypeGuard('ZodObject', schema)) {
-		for (const [_key, value] of Object.entries(schema.shape)) {
-			const nestedKey = key === '' ? _key : `${key}.${_key}`
+	for (const [rawPath, type] of Object.entries(input)) {
+		const path = rawPath.replaceAll('.{index}', '')
 
-			const nestedShape = zodFormSchema(value as any, nestedKey)
-			shape = { ...shape, ...nestedShape }
+		if (type === 'ZodString') schema[path] = { name: path, type: 'text' }
+		if (type === 'ZodNumber') schema[path] = { name: path, type: 'number' }
+		if (type === 'ZodBoolean') schema[path] = { name: path, type: 'checkbox' }
+		if (type === 'ZodEnum') schema[path] = { name: path, type: 'text' }
+	}
+
+	return schema
+}
+
+export const parseFormData = (formData: FormData, schema: z.ZodObject<z.ZodRawShape>) => {
+	const input = zodInputShape(schema)
+	const data: Record<string, unknown> = {}
+
+	for (const [path, type] of Object.entries(input)) {
+		const splittedPath = path.split('.')
+
+		let tmp: any = data
+		for (const [index, key] of splittedPath.entries()) {
+			if (tmp[key] === undefined && index !== splittedPath.length - 1) {
+				tmp[key] = {}
+				tmp = tmp[key]
+				continue
+			}
+
+			const rawValues = formData.getAll(path).map(value => {
+				// prettier-ignore
+				switch(type) {
+						case "ZodString": return value
+						case "ZodNumber": return Number(value)||undefined
+						case "ZodEnum": return value
+						case "ZodBoolean": return value==="on"?true:false
+						default: return undefined
+					}
+			})
+
+			tmp[key] = path.includes('{index}') ? rawValues : rawValues[0]
 		}
 	}
 
-	// if (zodTypeGuard("ZodArray", schema)) {
-	// 	const nestedShape = schema._def.type._cached
-	// 	shape = { ...shape, ...zodInputShape(nestedShape, `${key}.{index}`) }
-	// }
-
-	if (zodTypeGuard('ZodString', schema)) shape[key] = { name: key, type: 'text' }
-
-	if (zodTypeGuard('ZodNumber', schema)) shape[key] = { name: key, type: 'number' }
-
-	if (zodTypeGuard('ZodBoolean', schema)) shape[key] = { name: key, type: 'checkbox' }
-
-	if (zodTypeGuard('ZodEnum', schema)) shape[key] = { name: key, type: 'text' }
-
-	return shape
+	return data
 }

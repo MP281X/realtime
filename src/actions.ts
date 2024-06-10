@@ -1,7 +1,7 @@
 import type { z } from 'zod'
 import type { Actions } from '@sveltejs/kit'
 
-import { zodFormSchema, formatZodError } from './lib/zodHelpers'
+import { zodFormSchema, parseFormData, formatZodError } from './lib/zodHelpers'
 
 type MaybePromise<T> = T | Promise<T>
 type ActionsEvent = Parameters<Actions[string]>[number]
@@ -29,15 +29,9 @@ export const defineSvelteAction = <
 
 		const contentType = request.headers.get('content-type')
 
-		if (contentType === 'application/json') {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-			reqBody = await request.json()
-		}
-
-		if (contentType === 'application/x-www-form-urlencoded') {
-			const formData = await request.formData()
-			reqBody = Object.fromEntries(formData.entries())
-		}
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+		if (contentType === 'application/json') reqBody = await request.json()
+		if (contentType === 'application/x-www-form-urlencoded') reqBody = parseFormData(await request.formData(), action.input)
 
 		return reqBody
 	}
