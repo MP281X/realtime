@@ -1,6 +1,7 @@
+import type { z } from 'zod'
 import type { Actions } from '@sveltejs/kit'
 
-import * as v from 'valibot'
+import { zodFormSchema, formatZodError } from './lib/zodHelpers'
 
 type MaybePromise<T> = T | Promise<T>
 type ActionsEvent = Parameters<Actions[string]>[number]
@@ -15,8 +16,8 @@ type MaybeError<Data, Error> =
 	  }
 
 export const defineSvelteAction = <
-	Input extends v.ObjectSchema<any, any>,
-	Data extends v.InferOutput<Input>,
+	Input extends z.ZodObject<z.ZodRawShape>,
+	Data extends z.infer<Input>,
 	// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 	Res extends MaybePromise<void | Record<string, unknown>>
 >(action: {
@@ -42,15 +43,16 @@ export const defineSvelteAction = <
 	}
 
 	return {
-		handler: async (event: ActionsEvent): Promise<MaybeError<Res, Record<string, unknown>>> => {
-			const schema = action.input as v.ObjectSchema<v.ObjectEntries, any>
-			const result = v.safeParse(schema, await parseBody(event.request))
+		formSchema: zodFormSchema<Input>(action.input['shape'] as any),
+		handler: async (event: ActionsEvent): Promise<MaybeError<Res, { [K in keyof Res]?: string }>> => {
+			const schema = action.input
+			const result = schema.safeParse(await parseBody(event.request))
 
-			if (result.success === false) return { data: undefined, error: v.flatten(result.issues).nested ?? {} }
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+			if (result.success === false) return { data: undefined, error: formatZodError(result.error.errors) as any }
 
-			return { data: await action.handler(result.output as any, event), error: undefined }
-		},
-		schema: action.input
+			return { data: await action.handler(result.data as any, event), error: undefined }
+		}
 	}
 }
 
@@ -59,32 +61,12 @@ export const svelteActions = <T extends Record<string, ReturnType<typeof defineS
 	const handlers: Record<string, unknown> = {}
 
 	for (const [key, value] of Object.entries(actions)) {
-		inputs[key] = value.schema
+		inputs[key] = value.formSchema
 		handlers[key] = value.handler
 	}
 
 	return {
-		handlers: handlers as { [K in keyof T]: T[K]['handler'] },
-		schema: inputs as { [K in keyof T]: T[K]['schema'] }
-	}
-}
-
-export const defineNextAction = <
-	Input extends v.ObjectSchema<any, any>,
-	Data extends v.InferOutput<Input>,
-	// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-	Res extends MaybePromise<void | Record<string, unknown>>
->(action: {
-	input: Input
-	handler: (data: Data) => Res
-}) => {
-	const schema = action.input as v.ObjectSchema<v.ObjectEntries, any>
-
-	return async (data: Data): Promise<MaybeError<Res, Record<string, unknown>>> => {
-		const result = v.safeParse(schema, data)
-
-		if (result.success === false) return { data: undefined, error: v.flatten(result.issues).nested ?? {} }
-
-		return { data: await action.handler(result.output as any), error: undefined }
+		formsSchema: inputs as { [K in keyof T]: T[K]['formSchema'] },
+		handlers: handlers as { [K in keyof T]: T[K]['handler'] }
 	}
 }

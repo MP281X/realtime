@@ -18,11 +18,12 @@
 
 	"peerDependencies": {
 		"redis": "^4",
-		"valibot": "latest",
-		"@sveltejs/kit": "latest"
+		"zod": "^3",
+		"@sveltejs/kit": "*"
 	},
 	"peerDependenciesMeta": {
 		"redis": { "optional": true },
+		"zod": { "optional": true },
 		"@sveltejs/kit": { "optional": true }
 	},
 

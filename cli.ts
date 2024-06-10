@@ -2,8 +2,8 @@
 
 import type { Node } from 'typescript'
 
-import { getEndpoints } from './src/findEndpoints.ts'
-import { writeNodesToFile, objectTypeFactory, typeImportFactory } from './src/tsFactory.ts'
+import { getEndpoints } from './src/lib/findEndpoints.ts'
+import { writeNodesToFile, objectTypeFactory, typeImportFactory } from './src/lib/tsFactory.ts'
 
 const typeImports: Node[] = []
 const routeObj = new Map<string, string>()
