@@ -43,7 +43,7 @@ export const defineSvelteAction = <
 	}
 
 	return {
-		formSchema: zodFormSchema<Input>(action.input['shape'] as any),
+		formSchema: zodFormSchema(action.input),
 		handler: async (event: ActionsEvent): Promise<MaybeError<Res, { [K in keyof Res]?: string }>> => {
 			const schema = action.input
 			const result = schema.safeParse(await parseBody(event.request))
@@ -66,7 +66,7 @@ export const svelteActions = <T extends Record<string, ReturnType<typeof defineS
 	}
 
 	return {
-		formsSchema: inputs as { [K in keyof T]: T[K]['formSchema'] },
+		formSchema: inputs as { [K in keyof T]: T[K]['formSchema'] },
 		handlers: handlers as { [K in keyof T]: T[K]['handler'] }
 	}
 }

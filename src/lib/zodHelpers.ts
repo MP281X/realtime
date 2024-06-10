@@ -25,21 +25,21 @@ const zodTypeGuard = <T extends keyof ZodTypes>(typeGuard: T, schema: z.ZodTypeA
 	return false
 }
 
-type FlatObjKeys<Schema, Path extends string = ''> =
-	Schema extends Record<string, unknown> ?
-		{
-			[K in keyof Schema]: K extends string ?
-				Path extends '' ?
-					FlatObjKeys<Schema[K], K>
-				:	FlatObjKeys<Schema[K], `${Path}.${K}`>
-			:	never
-		}[keyof Schema]
-	: Schema extends string | number | boolean ? Path
-	: never
+// type FlatObjKeys<Schema, Path extends string = ''> =
+// 	Schema extends Record<string, unknown> ?
+// 		{
+// 			[K in keyof Schema]: K extends string ?
+// 				Path extends '' ?
+// 					FlatObjKeys<Schema[K], K>
+// 				:	FlatObjKeys<Schema[K], `${Path}.${K}`>
+// 			:	never
+// 		}[keyof Schema]
+// 	: Schema extends string | number | boolean ? Path
+// 	: never
 
 type HTMLInputFields = { name: string; type: 'text' | 'number' | 'checkbox' }
-type ZodFormSchemaReturn<T extends z.ZodObject<z.ZodRawShape>> = Record<FlatObjKeys<z.input<T>>, HTMLInputFields>
-export const zodFormSchema = <T extends z.ZodObject<z.ZodRawShape>>(rawSchema: T, key = ''): ZodFormSchemaReturn<T> => {
+// type ZodFormSchemaReturn<T extends z.ZodObject<z.ZodRawShape>> = Record<FlatObjKeys<z.input<T>>, HTMLInputFields>
+export const zodFormSchema = <T extends z.ZodObject<z.ZodRawShape>>(rawSchema: T, key = ''): Record<string, HTMLInputFields> => {
 	let shape: Record<string, HTMLInputFields> = {}
 
 	const schema = rawSchema as z.ZodTypeAny
@@ -48,7 +48,6 @@ export const zodFormSchema = <T extends z.ZodObject<z.ZodRawShape>>(rawSchema: T
 		for (const [_key, value] of Object.entries(schema.shape)) {
 			const nestedKey = key === '' ? _key : `${key}.${_key}`
 
-			// @ts-expect-error
 			const nestedShape = zodFormSchema(value as any, nestedKey)
 			shape = { ...shape, ...nestedShape }
 		}
