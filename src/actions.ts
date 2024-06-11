@@ -1,7 +1,7 @@
 import type { z } from 'zod'
 import type { Actions } from '@sveltejs/kit'
 
-import { zodFormSchema, parseFormData, formatZodError } from './lib/zodHelpers'
+import { zodFormSchema, parseFormData, zodInputShape, formatZodError } from './lib/zodHelpers'
 
 type MaybePromise<T> = T | Promise<T>
 type ActionsEvent = Parameters<Actions[string]>[number]
@@ -24,6 +24,8 @@ export const defineSvelteAction = <
 	input: Input
 	handler: (data: Data, event: ActionsEvent) => Res
 }) => {
+	const zodShape = zodInputShape(action.input)
+
 	const parseBody = async (request: Request) => {
 		let reqBody: Record<string, unknown> | Record<string, unknown>[] = {}
 
@@ -31,13 +33,13 @@ export const defineSvelteAction = <
 
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		if (contentType === 'application/json') reqBody = await request.json()
-		if (contentType === 'application/x-www-form-urlencoded') reqBody = parseFormData(await request.formData(), action.input)
+		if (contentType === 'application/x-www-form-urlencoded') reqBody = parseFormData(await request.formData(), zodShape)
 
 		return reqBody
 	}
 
 	return {
-		formSchema: zodFormSchema(action.input),
+		formSchema: zodFormSchema(zodShape),
 		handler: async (event: ActionsEvent): Promise<MaybeError<Res, { [K in keyof Res]?: string }>> => {
 			const schema = action.input
 			const result = schema.safeParse(await parseBody(event.request))

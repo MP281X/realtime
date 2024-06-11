@@ -19,6 +19,7 @@ type ZodTypes = {
 	ZodBoolean: z.ZodBoolean
 	ZodArray: z.ZodArray<any>
 	ZodObject: z.ZodObject<any>
+	ZodDefault: z.ZodDefault<any>
 }
 const zodTypeGuard = <T extends keyof ZodTypes>(typeGuard: T, schema: z.ZodTypeAny): schema is ZodTypes[T] => {
 	if (schema._def?.typeName === typeGuard) return true
@@ -26,32 +27,24 @@ const zodTypeGuard = <T extends keyof ZodTypes>(typeGuard: T, schema: z.ZodTypeA
 	return false
 }
 
-const zodInputShape = <T extends z.ZodTypeAny>(schema: T, key = '') => {
-	let shape: Record<string, keyof ZodTypes> = {}
-
+export const zodInputShape = <T extends z.ZodTypeAny>(schema: T, key = ''): Record<string, keyof ZodTypes> => {
 	if (zodTypeGuard('ZodObject', schema)) {
-		for (const [_key, value] of Object.entries(schema.shape)) {
+		return Object.entries(schema.shape).reduce<Record<string, keyof ZodTypes>>((prev, [_key, value]) => {
 			const nestedKey = key === '' ? _key : `${key}.${_key}`
-
-			const nestedShape = zodInputShape(value as any, nestedKey)
-			shape = { ...shape, ...nestedShape }
-		}
+			return { ...prev, ...zodInputShape(value as any, nestedKey) }
+		}, {})
 	}
 
-	if (zodTypeGuard('ZodArray', schema)) {
-		const nestedShape = schema._def.type._cached
-		shape = { ...shape, ...zodInputShape(nestedShape, `${key}.{index}`) }
+	// prettier-ignore
+	switch (true) {
+		case zodTypeGuard('ZodArray',   schema): return zodInputShape(schema._def.type, `${key}.{index}`)
+		case zodTypeGuard('ZodDefault', schema): return zodInputShape(schema._def.innerType, key)
+		case zodTypeGuard('ZodString',  schema): return { [key]: 'ZodString'  }
+		case zodTypeGuard('ZodNumber',  schema): return { [key]: 'ZodNumber'  }
+		case zodTypeGuard('ZodBoolean', schema): return { [key]: 'ZodBoolean' }
+		case zodTypeGuard('ZodEnum',    schema): return { [key]: 'ZodEnum'    }
+		default:                                            return {                     }
 	}
-
-	if (zodTypeGuard('ZodString', schema)) shape[key] = 'ZodString'
-
-	if (zodTypeGuard('ZodNumber', schema)) shape[key] = 'ZodNumber'
-
-	if (zodTypeGuard('ZodBoolean', schema)) shape[key] = 'ZodBoolean'
-
-	if (zodTypeGuard('ZodEnum', schema)) shape[key] = 'ZodEnum'
-
-	return shape
 }
 
 // type FlatObjKeys<Schema, Path extends string = ''> =
@@ -67,13 +60,11 @@ const zodInputShape = <T extends z.ZodTypeAny>(schema: T, key = '') => {
 // 	: never
 
 type HTMLInputFields = { name: string; type: 'text' | 'number' | 'checkbox' }
-export const zodFormSchema = <T extends z.ZodObject<z.ZodRawShape>>(rawSchema: T) => {
-	const input = zodInputShape(rawSchema)
-
+export const zodFormSchema = (zodShape: Record<string, keyof ZodTypes>) => {
 	// Record<FlatObjKeys<z.input<T>>, HTMLInputFields>
 	const schema: Record<string, HTMLInputFields> = {}
 
-	for (const [rawPath, type] of Object.entries(input)) {
+	for (const [rawPath, type] of Object.entries(zodShape)) {
 		const path = rawPath.replaceAll('.{index}', '')
 
 		if (type === 'ZodString') schema[path] = { name: path, type: 'text' }
@@ -85,11 +76,13 @@ export const zodFormSchema = <T extends z.ZodObject<z.ZodRawShape>>(rawSchema: T
 	return schema
 }
 
-export const parseFormData = (formData: FormData, schema: z.ZodObject<z.ZodRawShape>) => {
-	const input = zodInputShape(schema)
+export const parseFormData = (formData: FormData, zodShape: Record<string, keyof ZodTypes>) => {
 	const data: Record<string, unknown> = {}
 
-	for (const [path, type] of Object.entries(input)) {
+	for (const [rawPath, type] of Object.entries(zodShape)) {
+		const path = rawPath.replaceAll('.{index}', '')
+		const isArray = rawPath.includes('{index}')
+
 		const splittedPath = path.split('.')
 
 		let tmp: any = data
@@ -102,16 +95,16 @@ export const parseFormData = (formData: FormData, schema: z.ZodObject<z.ZodRawSh
 
 			const rawValues = formData.getAll(path).map(value => {
 				// prettier-ignore
-				switch(type) {
-						case "ZodString": return value
-						case "ZodNumber": return Number(value)||undefined
-						case "ZodEnum": return value
-						case "ZodBoolean": return value==="on"?true:false
-						default: return undefined
-					}
+				switch (type) {
+					case "ZodString":  return value
+					case "ZodNumber":  return Number(value) || undefined
+					case "ZodEnum":    return value
+					case "ZodBoolean": return value === "on" ? true : false
+					default:           return undefined
+				}
 			})
 
-			tmp[key] = path.includes('{index}') ? rawValues : rawValues[0]
+			tmp[key] = isArray ? rawValues : rawValues[0]
 		}
 	}
 
