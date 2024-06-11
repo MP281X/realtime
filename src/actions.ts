@@ -16,12 +16,13 @@ type MaybeError<Data, Error> =
 	  }
 
 export const defineSvelteAction = <
-	Input extends z.ZodObject<z.ZodRawShape>,
-	Data extends z.infer<Input>,
+	InputSchema extends z.ZodObject<z.ZodRawShape>,
+	Data extends z.infer<InputSchema>,
+	InputType extends z.input<InputSchema>,
 	// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 	Res extends MaybePromise<void | Record<string, unknown>>
 >(action: {
-	input: Input
+	input: InputSchema
 	handler: (data: Data, event: ActionsEvent) => Res
 }) => {
 	const zodShape = zodInputShape(action.input)
@@ -39,7 +40,7 @@ export const defineSvelteAction = <
 	}
 
 	return {
-		formSchema: zodFormSchema(zodShape),
+		formSchema: zodFormSchema<InputType>(zodShape),
 		handler: async (event: ActionsEvent): Promise<MaybeError<Res, { [K in keyof Res]?: string }>> => {
 			const schema = action.input
 			const result = schema.safeParse(await parseBody(event.request))

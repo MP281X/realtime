@@ -47,21 +47,20 @@ export const zodInputShape = <T extends z.ZodTypeAny>(schema: T, key = ''): Reco
 	}
 }
 
-// type FlatObjKeys<Schema, Path extends string = ''> =
-// 	Schema extends Record<string, unknown> ?
-// 		{
-// 			[K in keyof Schema]: K extends string ?
-// 				Path extends '' ?
-// 					FlatObjKeys<Schema[K], K>
-// 				:	FlatObjKeys<Schema[K], `${Path}.${K}`>
-// 			:	never
-// 		}[keyof Schema]
-// 	: Schema extends string | number | boolean ? Path
-// 	: never
+export type FlatObjKeys<Schema, Path extends string = ''> =
+	Schema extends string | number | boolean ? Path
+	: Path extends `${string}.${string}.${string}` ? `${Path}.${string}`
+	: Schema extends (infer ArrEl)[] ? FlatObjKeys<ArrEl, Path>
+	: Schema extends Record<infer ObjKeys, unknown> ?
+		Path extends '' ?
+			// @ts-expect-error: the type of the keys is always string
+			{ [K in ObjKeys]: FlatObjKeys<Schema[K], K> }[ObjKeys]
+		:	// @ts-expect-error: the type of the keys is always string
+			{ [K in ObjKeys]: FlatObjKeys<Schema[K], `${Path}.${K}`> }[ObjKeys]
+	:	never
 
 type HTMLInputFields = { name: string; type: 'text' | 'number' | 'checkbox' }
-export const zodFormSchema = (zodShape: Record<string, keyof ZodTypes>) => {
-	// Record<FlatObjKeys<z.input<T>>, HTMLInputFields>
+export const zodFormSchema = <InputSchema>(zodShape: Record<string, keyof ZodTypes>) => {
 	const schema: Record<string, HTMLInputFields> = {}
 
 	for (const [rawPath, type] of Object.entries(zodShape)) {
@@ -73,7 +72,7 @@ export const zodFormSchema = (zodShape: Record<string, keyof ZodTypes>) => {
 		if (type === 'ZodEnum') schema[path] = { name: path, type: 'text' }
 	}
 
-	return schema
+	return schema as Record<FlatObjKeys<InputSchema>, HTMLInputFields>
 }
 
 export const parseFormData = (formData: FormData, zodShape: Record<string, keyof ZodTypes>) => {
