@@ -5,7 +5,7 @@
 import type { z } from 'zod'
 
 export const formatZodError = (errors: z.ZodIssue[]) => {
-	const errorObj: Record<string, any> = {}
+	const errorObj: Record<string, string> = {}
 
 	for (const { message, path } of errors) errorObj[path.join('.')] = message
 
@@ -47,16 +47,19 @@ export const zodInputShape = <T extends z.ZodTypeAny>(schema: T, key = ''): Reco
 	}
 }
 
-export type FlatObjKeys<Schema, Path extends string = ''> =
+export type FlatObjKeys<Schema, ArrayIndex extends boolean = false, Path extends string = ''> =
 	Schema extends string | number | boolean ? Path
-	: Path extends `${string}.${string}.${string}` ? `${Path}.${string}`
-	: Schema extends (infer ArrEl)[] ? FlatObjKeys<ArrEl, Path>
+	: Path extends `${string}.${string}.${string}.${string}` ? Path
+	: Schema extends (infer ArrEl)[] ?
+		ArrayIndex extends true ?
+			FlatObjKeys<ArrEl, ArrayIndex, `${Path}.${number}`>
+		:	FlatObjKeys<ArrEl, ArrayIndex, Path>
 	: Schema extends Record<infer ObjKeys, unknown> ?
 		Path extends '' ?
 			// @ts-expect-error: the type of the keys is always string
-			{ [K in ObjKeys]: FlatObjKeys<Schema[K], K> }[ObjKeys]
+			{ [K in ObjKeys]: FlatObjKeys<Schema[K], ArrayIndex, K> }[ObjKeys]
 		:	// @ts-expect-error: the type of the keys is always string
-			{ [K in ObjKeys]: FlatObjKeys<Schema[K], `${Path}.${K}`> }[ObjKeys]
+			{ [K in ObjKeys]: FlatObjKeys<Schema[K], ArrayIndex, `${Path}.${K}`> }[ObjKeys]
 	:	never
 
 type HTMLInputFields = { name: string; type: 'text' | 'number' | 'checkbox' }

@@ -1,7 +1,7 @@
 import type { z } from 'zod'
 import type { Actions } from '@sveltejs/kit'
 
-import { zodFormSchema, parseFormData, zodInputShape, formatZodError } from './lib/zodHelpers'
+import { type FlatObjKeys, zodFormSchema, parseFormData, zodInputShape, formatZodError } from './lib/zodHelpers'
 
 type MaybePromise<T> = T | Promise<T>
 type ActionsEvent = Parameters<Actions[string]>[number]
@@ -41,7 +41,7 @@ export const defineSvelteAction = <
 
 	return {
 		formSchema: zodFormSchema<InputType>(zodShape),
-		handler: async (event: ActionsEvent): Promise<MaybeError<Res, { [K in keyof Res]?: string }>> => {
+		handler: async (event: ActionsEvent): Promise<MaybeError<Res, Record<FlatObjKeys<InputType, true>, string>>> => {
 			const schema = action.input
 			const result = schema.safeParse(await parseBody(event.request))
 
