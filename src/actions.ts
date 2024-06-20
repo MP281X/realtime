@@ -67,3 +67,29 @@ export const svelteActions = <T extends Record<string, ReturnType<typeof defineS
 		handlers: handlers as { [K in keyof T]: T[K]['handler'] }
 	}
 }
+
+export const defineReactAction = <
+	InputSchema extends z.ZodObject<z.ZodRawShape>,
+	Data extends z.infer<InputSchema>,
+	InputType extends z.input<InputSchema>,
+	Res extends void | Promise<void>
+>(action: {
+	input: InputSchema
+	handler: (data: MaybeError<Data, Record<FlatObjKeys<InputType, true>, string>>) => Res
+}) => {
+	const zodShape = zodInputShape(action.input)
+
+	return {
+		formSchema: zodFormSchema<InputType>(zodShape),
+		handler: (formData: FormData) => {
+			const schema = action.input
+			const result = schema.safeParse(parseFormData(formData, zodShape))
+
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+			if (result.success === false) return action.handler({ data: undefined, error: formatZodError(result.error.errors) as any })
+
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+			return action.handler({ data: result.data as any, error: undefined })
+		}
+	}
+}
