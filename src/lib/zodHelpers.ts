@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/naming-convention */
-
 import type { z } from 'zod'
 
 export const formatZodError = (errors: z.ZodIssue[]) => {
@@ -13,69 +9,73 @@ export const formatZodError = (errors: z.ZodIssue[]) => {
 }
 
 type ZodTypes = {
-	ZodString: z.ZodString
-	ZodNumber: z.ZodNumber
-	ZodEnum: z.ZodEnum<any>
-	ZodBoolean: z.ZodBoolean
-	ZodArray: z.ZodArray<any>
-	ZodObject: z.ZodObject<any>
-	ZodDefault: z.ZodDefault<any>
+	zodString: z.ZodString
+	zodNumber: z.ZodNumber
+	zodEnum: z.ZodEnum<any>
+	zodBoolean: z.ZodBoolean
+	zodArray: z.ZodArray<any>
+	zodObject: z.ZodObject<any>
+	zodDefault: z.ZodDefault<any>
 }
 const zodTypeGuard = <T extends keyof ZodTypes>(typeGuard: T, schema: z.ZodTypeAny): schema is ZodTypes[T] => {
 	if (schema._def?.typeName === typeGuard) return true
-	if (schema._def === undefined && typeGuard === 'ZodObject') return true
+	if (schema._def === undefined && typeGuard === 'zodObject') return true
 	return false
 }
 
 export const zodInputShape = <T extends z.ZodTypeAny>(schema: T, key = ''): Record<string, keyof ZodTypes> => {
-	if (zodTypeGuard('ZodObject', schema)) {
+	if (zodTypeGuard('zodObject', schema)) {
 		return Object.entries(schema.shape).reduce<Record<string, keyof ZodTypes>>((prev, [_key, value]) => {
 			const nestedKey = key === '' ? _key : `${key}.${_key}`
 			return { ...prev, ...zodInputShape(value as any, nestedKey) }
 		}, {})
 	}
 
-	// prettier-ignore
+	// biome-ignore format:
 	switch (true) {
-		case zodTypeGuard('ZodArray',   schema): return zodInputShape(schema._def.type, `${key}.{index}`)
-		case zodTypeGuard('ZodDefault', schema): return zodInputShape(schema._def.innerType, key)
-		case zodTypeGuard('ZodString',  schema): return { [key]: 'ZodString'  }
-		case zodTypeGuard('ZodNumber',  schema): return { [key]: 'ZodNumber'  }
-		case zodTypeGuard('ZodBoolean', schema): return { [key]: 'ZodBoolean' }
-		case zodTypeGuard('ZodEnum',    schema): return { [key]: 'ZodEnum'    }
+		case zodTypeGuard('zodArray',   schema): return zodInputShape(schema._def.type, `${key}.{index}`)
+		case zodTypeGuard('zodDefault', schema): return zodInputShape(schema._def.innerType, key)
+		case zodTypeGuard('zodString',  schema): return { [key]: 'zodString'  }
+		case zodTypeGuard('zodNumber',  schema): return { [key]: 'zodNumber'  }
+		case zodTypeGuard('zodBoolean', schema): return { [key]: 'zodBoolean' }
+		case zodTypeGuard('zodEnum',    schema): return { [key]: 'zodEnum'    }
 		default:                                            return {                     }
 	}
 }
 
-export type FlatObjKeys<Schema, ArrayIndex extends boolean = false, Path extends string = ''> =
-	Schema extends string | number | boolean ? Path
-	: Path extends `${string}.${string}.${string}.${string}` ? Path
-	: Schema extends (infer ArrEl)[] ?
-		ArrayIndex extends true ?
-			FlatObjKeys<ArrEl, ArrayIndex, `${Path}.${number}`>
-		:	FlatObjKeys<ArrEl, ArrayIndex, Path>
-	: Schema extends Record<infer ObjKeys, unknown> ?
-		Path extends '' ?
-			// @ts-expect-error: the type of the keys is always string
-			{ [K in ObjKeys]: FlatObjKeys<Schema[K], ArrayIndex, K> }[ObjKeys]
-		:	// @ts-expect-error: the type of the keys is always string
-			{ [K in ObjKeys]: FlatObjKeys<Schema[K], ArrayIndex, `${Path}.${K}`> }[ObjKeys]
-	:	never
+export type FlatObjKeys<Schema, ArrayIndex extends boolean = false, Path extends string = ''> = Schema extends
+	| string
+	| number
+	| boolean
+	? Path
+	: Path extends `${string}.${string}.${string}.${string}`
+		? Path
+		: Schema extends (infer ArrEl)[]
+			? ArrayIndex extends true
+				? FlatObjKeys<ArrEl, ArrayIndex, `${Path}.${number}`>
+				: FlatObjKeys<ArrEl, ArrayIndex, Path>
+			: Schema extends Record<infer ObjKeys, unknown>
+				? Path extends ''
+					? // @ts-expect-error: the type of the keys is always string
+						{ [K in ObjKeys]: FlatObjKeys<Schema[K], ArrayIndex, K> }[ObjKeys]
+					: // @ts-expect-error: the type of the keys is always string
+						{ [K in ObjKeys]: FlatObjKeys<Schema[K], ArrayIndex, `${Path}.${K}`> }[ObjKeys]
+				: never
 
-type HTMLInputFields = { name: string; type: 'text' | 'number' | 'checkbox' }
+type HtmlInputFields = { name: string; type: 'text' | 'number' | 'checkbox' }
 export const zodFormSchema = <InputSchema>(zodShape: Record<string, keyof ZodTypes>) => {
-	const schema: Record<string, HTMLInputFields> = {}
+	const schema: Record<string, HtmlInputFields> = {}
 
 	for (const [rawPath, type] of Object.entries(zodShape)) {
 		const path = rawPath.replaceAll('.{index}', '')
 
-		if (type === 'ZodString') schema[path] = { name: path, type: 'text' }
-		if (type === 'ZodNumber') schema[path] = { name: path, type: 'number' }
-		if (type === 'ZodBoolean') schema[path] = { name: path, type: 'checkbox' }
-		if (type === 'ZodEnum') schema[path] = { name: path, type: 'text' }
+		if (type === 'zodString') schema[path] = { name: path, type: 'text' }
+		if (type === 'zodNumber') schema[path] = { name: path, type: 'number' }
+		if (type === 'zodBoolean') schema[path] = { name: path, type: 'checkbox' }
+		if (type === 'zodEnum') schema[path] = { name: path, type: 'text' }
 	}
 
-	return schema as Record<FlatObjKeys<InputSchema>, HTMLInputFields>
+	return schema as Record<FlatObjKeys<InputSchema>, HtmlInputFields>
 }
 
 export const parseFormData = (formData: FormData, zodShape: Record<string, keyof ZodTypes>) => {
@@ -96,12 +96,12 @@ export const parseFormData = (formData: FormData, zodShape: Record<string, keyof
 			}
 
 			const rawValues = formData.getAll(path).map(value => {
-				// prettier-ignore
+				// biome-ignore format:
 				switch (type) {
-					case "ZodString":  return value
-					case "ZodNumber":  return Number(value) || undefined
-					case "ZodEnum":    return value
-					case "ZodBoolean": return value === "on" ? true : false
+					case 'zodString':  return value
+					case 'zodNumber':  return Number(value) || undefined
+					case 'zodEnum':    return value
+					case 'zodBoolean': return value === 'on'
 					default:           return undefined
 				}
 			})

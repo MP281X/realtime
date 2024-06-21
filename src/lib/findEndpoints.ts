@@ -27,7 +27,11 @@ export const getEndpoints = async () => {
 		let importName = key.replaceAll('/', '_')
 		if (importName === '_') importName = 'index'
 
-		endpoints.push({ importName, key: `/${key.replace(/\/+/g, '/')}`, path: './' + path })
+		endpoints.push({
+			importName,
+			key: `/${key.replace(/\/+/g, '/')}`,
+			path: './' + path
+		})
 	}
 
 	return endpoints

@@ -1,7 +1,7 @@
-import type { z } from 'zod'
 import type { Actions } from '@sveltejs/kit'
+import type { z } from 'zod'
 
-import { type FlatObjKeys, zodFormSchema, parseFormData, zodInputShape, formatZodError } from './lib/zodHelpers'
+import { type FlatObjKeys, formatZodError, parseFormData, zodFormSchema, zodInputShape } from './lib/zodHelpers'
 
 type MaybePromise<T> = T | Promise<T>
 type ActionsEvent = Parameters<Actions[string]>[number]
@@ -19,7 +19,6 @@ export const defineSvelteAction = <
 	InputSchema extends z.ZodObject<z.ZodRawShape>,
 	Data extends z.infer<InputSchema>,
 	InputType extends z.input<InputSchema>,
-	// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 	Res extends MaybePromise<void | Record<string, unknown>>
 >(action: {
 	input: InputSchema
@@ -32,7 +31,6 @@ export const defineSvelteAction = <
 
 		const contentType = request.headers.get('content-type')
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		if (contentType === 'application/json') reqBody = await request.json()
 		if (contentType === 'application/x-www-form-urlencoded') reqBody = parseFormData(await request.formData(), zodShape)
 
@@ -45,10 +43,16 @@ export const defineSvelteAction = <
 			const schema = action.input
 			const result = schema.safeParse(await parseBody(event.request))
 
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-			if (result.success === false) return { data: undefined, error: formatZodError(result.error.errors) as any }
+			if (result.success === false)
+				return {
+					data: undefined,
+					error: formatZodError(result.error.errors) as any
+				}
 
-			return { data: await action.handler(result.data as any, event), error: undefined }
+			return {
+				data: await action.handler(result.data as any, event),
+				error: undefined
+			}
 		}
 	}
 }
@@ -85,10 +89,12 @@ export const defineReactAction = <
 			const schema = action.input
 			const result = schema.safeParse(parseFormData(formData, zodShape))
 
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-			if (result.success === false) return action.handler({ data: undefined, error: formatZodError(result.error.errors) as any })
+			if (result.success === false)
+				return action.handler({
+					data: undefined,
+					error: formatZodError(result.error.errors) as any
+				})
 
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 			return action.handler({ data: result.data as any, error: undefined })
 		}
 	}

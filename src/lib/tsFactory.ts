@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 import ts from 'typescript'
 
 export const objectTypeFactory = (name: string, obj: Record<string, string>) =>
@@ -27,8 +27,10 @@ export const typeImportFactory = (name: string, path: string) =>
 	)
 
 const nodeToStr = (node: ts.Node) =>
-	// @ts-expect-error
-	ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printNode(ts.EmitHint.Unspecified, node, undefined)
+	ts
+		.createPrinter({ newLine: ts.NewLineKind.LineFeed })
+		// @ts-expect-error
+		.printNode(ts.EmitHint.Unspecified, node, undefined)
 
 export const writeNodesToFile = (fileName: string, nodes: readonly (string | ts.Node)[]) => {
 	const fileContent: string[] = []

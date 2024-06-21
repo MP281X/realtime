@@ -1,6 +1,6 @@
 import type { RedisClientType } from 'redis'
 
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'node:events'
 
 class PubSub<T extends Record<string, unknown>> {
 	private channel
@@ -35,7 +35,6 @@ class PubSub<T extends Record<string, unknown>> {
 	}
 
 	// return an interator for a specific channel
-	// eslint-disable-next-line @typescript-eslint/ban-types
 	public async *iterator(channelId: '*' | ({} & string)) {
 		const channel = `${this.channel}:${channelId}`
 
@@ -59,6 +58,7 @@ class PubSub<T extends Record<string, unknown>> {
 					continue
 				}
 
+				// biome-ignore lint/suspicious/noAssignInExpressions:
 				yield await new Promise<T>(res => void (resolve = res))
 			}
 		} finally {
@@ -66,7 +66,6 @@ class PubSub<T extends Record<string, unknown>> {
 		}
 	}
 
-	// eslint-disable-next-line @typescript-eslint/ban-types
 	public async publish(channelId: '*' | ({} & string), data: T) {
 		const channel = `${this.channel}:${channelId}`
 

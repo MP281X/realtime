@@ -9,11 +9,9 @@
 	"bin": { "realtime": "./dist/cli.js" },
 
 	"scripts": {
-		"dev": "tsup-node --watch",
-
-		"fix": "shared-config-fix",
-		"lint": "shared-config-lint",
-		"setup": "shared-config-setup && tsup-node"
+		"fix": "tsup-node && x fix",
+		"check": "tsup-node && x check",
+		"setup": "x setup"
 	},
 
 	"peerDependencies": {
@@ -28,6 +26,7 @@
 	},
 
 	"devDependencies": {
+		"@biomejs/biome": "latest",
 		"@mp281x/shared-config": "latest",
 
 		"typescript": "^5",
@@ -35,7 +34,5 @@
 
 		"tsup": "^8",
 		"fast-glob": "latest"
-	},
-
-	"pnpm": { "peerDependencyRules": { "allowedVersions": { "eslint": "*" } } }
+	}
 }
