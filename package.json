@@ -11,7 +11,7 @@
 	"scripts": {
 		"fix": "tsup-node && x fix",
 		"check": "tsup-node && x check",
-		"setup": "x setup"
+		"setup": "pnpm update -r --no-save && x setup"
 	},
 
 	"peerDependencies": {

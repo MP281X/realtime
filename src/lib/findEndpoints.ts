@@ -1,7 +1,7 @@
-import fastGlob from 'fast-glob'
+import { glob } from 'fast-glob'
 
 export const getEndpoints = async () => {
-	const rawEndpoints = await fastGlob.glob(['app/**/route.ts', 'src/routes/**/+server.ts', 'src/pages/**/*.ts'])
+	const rawEndpoints = await glob(['app/**/route.ts', 'src/routes/**/+server.ts', 'src/pages/**/*.ts'])
 
 	const endpoints: { key: string; path: string; importName: string }[] = []
 
