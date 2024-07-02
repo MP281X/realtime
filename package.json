@@ -9,9 +9,10 @@
 	"bin": { "realtime": "./dist/cli.js" },
 
 	"scripts": {
-		"fix": "tsup-node && x fix",
-		"check": "tsup-node && x check",
-		"setup": "pnpm update -r --no-save && x setup"
+		"check": "tsup-node && biome check .",
+		"fix": "tsup-node && biome check --write --unsafe .",
+
+		"setup": "pnpm update -r --no-save && tsup-node"
 	},
 
 	"peerDependencies": {
@@ -19,6 +20,7 @@
 		"zod": "^3",
 		"@sveltejs/kit": "*"
 	},
+
 	"peerDependenciesMeta": {
 		"redis": { "optional": true },
 		"zod": { "optional": true },
