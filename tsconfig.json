@@ -1,4 +1,3 @@
 {
-	"extends": ["@mp281x/shared-config/tsconfig"],
-	"include": ["index.ts", "cli.ts", "src/**/*", "*.config.*"]
+	"extends": ["@mp281x/shared-config/tsconfig"]
 }
