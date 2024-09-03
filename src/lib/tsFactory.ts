@@ -37,5 +37,6 @@ export const writeNodesToFile = (fileName: string, nodes: readonly (string | ts.
 
 	for (const node of nodes) fileContent.push(typeof node === 'string' ? node : nodeToStr(node))
 
+	fs.mkdirSync('.codegen/', { recursive: true })
 	fs.writeFileSync(fileName, fileContent.join('\n\n'))
 }

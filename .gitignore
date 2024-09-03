@@ -1,10 +1,23 @@
-# generated/cache files
+# svelte/next
+**/.svelte-kit
+**/.next
+**/next-env.d.ts
+
+# build output
 **/dist
+**/build
+
+# generated files
 **/*.g.ts
-**/.eslintcache
+**/.codegen/**/*
 **/*.tsbuildinfo
 
+# vite
+**/vite.config.js.timestamp-*
+**/vite.config.ts.timestamp-*
+
 # other files/folders
+**/.env
 **/.DS_Store
 **/node_modules
 **/pnpm-lock.yaml

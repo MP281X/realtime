@@ -9,33 +9,20 @@
 	"bin": { "realtime": "./dist/cli.js" },
 
 	"scripts": {
-		"check": "tsup-node && biome check .",
-		"fix": "tsup-node && biome check --write --unsafe .",
+		"build": "x build",
 
-		"setup": "pnpm update -r --no-save && tsup-node"
+		"fix": "x fix",
+		"check": "x check",
+		"setup": "x setup"
 	},
 
-	"peerDependencies": {
-		"redis": "^4",
-		"zod": "^3",
-		"@sveltejs/kit": "*"
-	},
-
-	"peerDependenciesMeta": {
-		"redis": { "optional": true },
-		"zod": { "optional": true },
-		"@sveltejs/kit": { "optional": true }
-	},
-
-	"dependencies": { "fast-glob": "latest" },
+	"peerDependencies": { "redis": "^4" },
+	"peerDependenciesMeta": { "redis": { "optional": true } },
 
 	"devDependencies": {
-		"@biomejs/biome": "latest",
 		"@mp281x/shared-config": "latest",
 
 		"typescript": "^5",
-		"@types/node": "^20",
-
-		"tsup": "^8"
+		"@types/node": "^20"
 	}
 }

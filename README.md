@@ -39,7 +39,7 @@ The easiest way to run it is to configure the project like this:
 ```json
 {
     ...
-	"include": ["sse.g.ts", ...]
+	"include": [".codegen/sse.g.ts", ...]
 }
 ```
 
@@ -59,12 +59,12 @@ export const GET = sseServer(async function* () {
 })
 
 // pub/sub
-import { sseServer, pubSub } from '@mp281x/realtime'
+import { sseServer, redisPubSub } from '@mp281x/realtime'
 
 import { createClient } from 'redis'
 export const redis = await createClient().connect()
 
-const { iterator } = await pubSub<{ value: number }>(redis, 'test-channel')
+const { iterator } = await redisPubSub<{ value: number }>(redis, 'test-channel')
 export const GET = sseServer(async function* () {
 	yield* iterator('*')
 })

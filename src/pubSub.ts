@@ -2,7 +2,7 @@ import type { RedisClientType } from 'redis'
 
 import { EventEmitter } from 'node:events'
 
-class PubSub<T extends Record<string, unknown>> {
+class RedisPubSub<T extends Record<string, unknown>> {
 	private channel
 	private eventEmitter
 
@@ -73,8 +73,10 @@ class PubSub<T extends Record<string, unknown>> {
 	}
 }
 
-export const pubSub = async <T extends Record<string, unknown>>(...params: ConstructorParameters<typeof PubSub<T>>) => {
-	const instance = new PubSub<T>(...params)
+export const redisPubSub = async <T extends Record<string, unknown>>(
+	...params: ConstructorParameters<typeof RedisPubSub<T>>
+) => {
+	const instance = new RedisPubSub<T>(...params)
 	await instance.initHandler()
 
 	return {

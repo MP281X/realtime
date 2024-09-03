@@ -7,7 +7,7 @@ import { objectTypeFactory, typeImportFactory, writeNodesToFile } from './src/li
 
 const typeImports: Node[] = []
 const routeObj = new Map<string, string>()
-for (const { importName, key, path } of await getEndpoints()) {
+for (const { importName, key, path } of getEndpoints()) {
 	typeImports.push(typeImportFactory(importName, path))
 	routeObj.set(key, importName)
 }
@@ -28,4 +28,4 @@ declare global {
 }
 `
 
-writeNodesToFile('./sse.g.ts', [...typeImports, routeObjType, endpointsType])
+writeNodesToFile('.codegen/sse.ts', [...typeImports, routeObjType, endpointsType])

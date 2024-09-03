@@ -1,7 +1,7 @@
-import { glob } from 'fast-glob'
+import { glob } from '@mp281x/shared-config'
 
-export const getEndpoints = async () => {
-	const rawEndpoints = await glob(['app/**/route.ts', 'src/routes/**/+server.ts', 'src/pages/**/*.ts'])
+export const getEndpoints = () => {
+	const rawEndpoints = glob(['app/**/route.ts', 'src/routes/**/+server.ts', 'src/pages/**/*.ts'])
 
 	const endpoints: { key: string; path: string; importName: string }[] = []
 
@@ -30,7 +30,7 @@ export const getEndpoints = async () => {
 		endpoints.push({
 			importName,
 			key: `/${key.replace(/\/+/g, '/')}`,
-			path: './' + path
+			path: '../' + path
 		})
 	}
 
