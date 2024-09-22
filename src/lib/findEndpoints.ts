@@ -1,7 +1,12 @@
 import { glob } from '@mp281x/shared-config'
 
 export const getEndpoints = () => {
-	const rawEndpoints = glob(['app/**/route.ts', 'src/routes/**/+server.ts', 'src/pages/**/*.ts'])
+	const rawEndpoints = glob([
+		'app/**/route.ts',
+		'src/routes/**/+server.ts',
+		'src/routes/**/+page.server.ts',
+		'src/pages/**/*.ts'
+	])
 
 	const endpoints: { key: string; path: string; importName: string }[] = []
 
@@ -14,6 +19,7 @@ export const getEndpoints = () => {
 		// remove sveltekit path and file name
 		key = key.replace('src/routes', '')
 		key = key.replace('+server.ts', '')
+		key = key.replace('+page.server.ts', '')
 
 		// remove astro path and file name
 		key = key.replace('src/pages', '')

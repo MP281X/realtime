@@ -39,7 +39,7 @@ class RedisPubSub<T extends Record<string, unknown>> {
 		const channel = `${this.channel}:${channelId}`
 
 		const dataArray: T[] = []
-		let resolve: ((value: T | PromiseLike<T>) => void) | undefined = undefined
+		let resolve: ((value: T | PromiseLike<T>) => void) | undefined
 
 		const listener = (data: T) => {
 			if (resolve === undefined) dataArray.push(data)

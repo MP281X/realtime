@@ -9,7 +9,7 @@
 	"bin": { "realtime": "./dist/cli.js" },
 
 	"scripts": {
-		"build": "x build",
+		"build": "x tsup-node",
 
 		"fix": "x fix",
 		"check": "x check",

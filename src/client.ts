@@ -2,10 +2,10 @@ declare global {
 	export interface Endpoints {}
 }
 
-export const sseHandler = <TEndpoints extends Endpoints, Url extends keyof TEndpoints, Data extends TEndpoints[Url]>(
+export function sseClient<TEndpoints extends Endpoints, Url extends keyof TEndpoints, Data extends TEndpoints[Url]>(
 	url: Url,
 	handler: (data: Data) => void | Promise<void>
-) => {
+) {
 	const eventSource = new EventSource(url as string)
 
 	eventSource.addEventListener('message', async event => {

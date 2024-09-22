@@ -1,4 +1,4 @@
-const iteratorToReadableStream = (iterator: Generator | AsyncGenerator) => {
+function iteratorToReadableStream(iterator: AsyncGenerator) {
 	const stream = new ReadableStream({
 		cancel: async () => {
 			try {
@@ -25,8 +25,6 @@ const iteratorToReadableStream = (iterator: Generator | AsyncGenerator) => {
 	return new Response(stream, { headers })
 }
 
-export const generatorToReadableStream = <T extends Record<string, unknown>>(
-	generator: (request: Request) => Generator<T> | AsyncGenerator<T>
-) => {
-	return async (request: Request) => iteratorToReadableStream(generator(request)) as any as T
+export function sseServer<T extends AsyncGenerator>(generator: (request: Request) => T) {
+	return (request: Request) => iteratorToReadableStream(generator(request)) as any as T
 }

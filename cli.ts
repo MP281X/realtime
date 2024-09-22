@@ -15,12 +15,11 @@ for (const { importName, key, path } of getEndpoints()) {
 const routeObjType = objectTypeFactory('FileExports', Object.fromEntries(routeObj))
 
 const endpointsType = `
-type EndpointType = (request: Request) => Promise<Record<string, unknown>>
-type EndpointReturnType<Endpoint extends EndpointType> = Awaited<ReturnType<Endpoint>>
+type EndpointType<T = unknown> = (request: Request) => AsyncGenerator<T>
 type TEndpoints = {
 	[K in keyof FileExports as FileExports[K] extends { GET: EndpointType } ? K : never]:
 		// @ts-ignore-error
-		EndpointReturnType<FileExports[K]['GET']>
+		FileExports[K]['GET'] extends EndpointType<infer ReturnT>?ReturnT:never
 }
 
 declare global {
